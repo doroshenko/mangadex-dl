@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import cloudscraper
-import time, os, sys, re, json, html, zipfile, argparse
+import time, os, sys, re, json, html, zipfile, argparse, shutil
 
 
 A_VERSION = "0.3"
@@ -146,14 +146,16 @@ def dl(manga_id, lang_code, zip_up, tld="org", input_chap=""):
 			time.sleep(1)
 
 		if zip_up == True:
-			zip_name = os.path.join(os.getcwd(), "download", title, title + " c{} [{}]".format(zpad(chapter_id[0]), groupname))+".cbz"
+			zip_name = os.path.join(os.getcwd(), "download", title, title + " c{} [{}]".format(zpad(chapter_id[0]), groupname))+".zip"
 			chap_folder = os.path.join(os.getcwd(), "download", title, "c{} [{}]".format(zpad(chapter_id[0]), groupname))
 			with zipfile.ZipFile(zip_name, 'w') as myzip:
 				for root, dirs, files in os.walk(chap_folder):
 					for file in files:
 						myzip.write(os.path.join(root, file))
 
-			print(" Chapter successfully packaged into .cbz")
+			print(" Chapter successfully packaged into .zip")
+			
+			shutil.rmtree(chap_folder)
 
 	print("Done!")
 
