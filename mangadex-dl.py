@@ -63,6 +63,8 @@ def dl(manga_id, lang_code, zip_up, tld="org", input_chap=""):
 	requested_chapters = []
 	if input_chap == "":
 		chap_list = input("\nEnter chapter(s) to download: ").strip()
+	elif input_chap == "last":
+		chap_list = chapters_revised[-1]
 	else:
 		chap_list = input_chap
 	chap_list = [s for s in chap_list.split(',')]
@@ -168,7 +170,7 @@ if __name__ == "__main__":
 		parser.add_argument("--url", "-u", default="", help="Enter Mangadex URL. Required.")
 		parser.add_argument("--lang", "-l", default="gb", help="Set desired language (https://github.com/frozenpandaman/mangadex-dl/wiki/language-codes). Defaults to gb if left out.")
 		parser.add_argument("--cbz", "-c", action="store_true", help="Include if you want to package chapter into .cbz")
-		parser.add_argument("--chapter", "-ch", default="", help="Enter desired chapters. Required.")
+		parser.add_argument("--chapter", "-ch", default="last", help="Enter desired chapters.")
 
 		args = parser.parse_args()
 
