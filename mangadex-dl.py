@@ -66,6 +66,8 @@ def dl(manga_id, lang_code, zip_up, tld="org", input_chap=""):
 	requested_chapters = []
 	if input_chap == "":
 		chap_list = input("\nEnter chapter(s) to download: ").strip()
+	elif input_chap == "all":
+		chap_list = "" + ','.join(map(str, chapters_revised))
 	elif input_chap == "last":
 		chap_list = chapters_revised[-1]
 	else:
