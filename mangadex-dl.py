@@ -51,10 +51,13 @@ def dl(manga_id, lang_code, zip_up, tld="org", input_chap=""):
 			chapters.append(manga["chapter"][str(chap)]["chapter"])
 	chapters.sort(key=float_conversion) # sort numerically by chapter #
 
-	chapters_revised = ["Oneshot" if x == "" else x for x in chapters]
+	chapters_revised = ['' if x == "" else x for x in chapters]
 	if len(chapters) == 0:
 		print("No chapters available to download!")
 		exit(0)
+	elif len(chapters) == 1 and chapters_revised[0] == '':
+		print("Available chapters:")
+		print("Oneshot")
 	else:
 		print("Available chapters:")
 		print(" " + ', '.join(map(str, chapters_revised)))
@@ -99,11 +102,11 @@ def dl(manga_id, lang_code, zip_up, tld="org", input_chap=""):
 		try:
 			chapter_num = str(float(manga["chapter"][str(chapter_id)]["chapter"])).replace(".0", "")
 		except:
-			pass # Oneshot
+			chapter_num = ''
 		chapter_group = manga["chapter"][chapter_id]["group_name"]
 		if chapter_num in requested_chapters and manga["chapter"][chapter_id]["lang_code"] == lang_code:
 			chaps_to_dl.append((str(chapter_num), chapter_id, chapter_group))
-	chaps_to_dl.sort(key = lambda x: float(x[0]))
+	chaps_to_dl.sort(key = lambda x : float_conversion(x[0]))
 
 	# get chapter(s) json
 	print()
