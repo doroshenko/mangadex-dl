@@ -3,7 +3,7 @@ import cloudscraper
 import time, os, sys, re, json, html, zipfile, argparse, shutil
 
 
-A_VERSION = "0.3.1"
+A_VERSION = "0.4.0"
 
 def pad_filename(str):
 	digits = re.compile('(\\d+)')
@@ -177,7 +177,7 @@ if __name__ == "__main__":
 		parser.add_argument("--url", "-u", default="", help="Enter Mangadex URL. Required.")
 		parser.add_argument("--lang", "-l", default="gb", help="Set desired language (https://github.com/frozenpandaman/mangadex-dl/wiki/language-codes). Defaults to gb if left out.")
 		parser.add_argument("--cbz", "-c", action="store_true", help="Include if you want to package chapter into .cbz")
-		parser.add_argument("--chapter", "-ch", default="last", help="Enter desired chapters.")
+		parser.add_argument("--chapter", "-ch", default="last", help="Enter desired chapters, 'last' to download the latest chapter, or 'all' for all chapters.")
 
 		args = parser.parse_args()
 
