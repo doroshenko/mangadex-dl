@@ -2,8 +2,7 @@
 import cloudscraper
 import time, os, sys, re, json, html, zipfile, argparse, shutil
 
-
-A_VERSION = "0.4.0"
+A_VERSION = "0.4.1"
 
 def pad_filename(str):
 	digits = re.compile('(\\d+)')
@@ -100,9 +99,11 @@ def dl(manga_id, lang_code, zip_up, tld="org", input_chap=""):
 
 	# find out which are availble to dl
 	chaps_to_dl = []
+	chapter_num = None
 	for chapter_id in manga["chapter"]:
 		try:
-			chapter_num = str(float(manga["chapter"][str(chapter_id)]["chapter"])).replace(".0", "")
+			chapter_num = str(float(manga["chapter"][str(chapter_id)]["chapter"]))
+			chapter_num = re.sub('.0$', '', chapter_num)
 		except:
 			chapter_num = ''
 		chapter_group = manga["chapter"][chapter_id]["group_name"]
