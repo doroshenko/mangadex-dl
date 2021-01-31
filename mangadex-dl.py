@@ -135,7 +135,7 @@ def dl(manga_id, lang_code, zip_up, tld="org", input_chap=""):
 			ext = os.path.splitext(filename)[1]
 
 			title = re.sub('[/<>:"/\\|?*]', '-', title)
-			subtitle = "{volume}{chapter}{group}".format(volume='' if volume == '' else "v"+zpad(volume)+" ",chapter="c"+zpad(chapter_id[0])+" ",group="["+groupname+"]")
+			subtitle = "{}c{} [{}]".format("v"+zpad(volume)+" " if volume else '',zpad(chapter_id[0]),groupname)
 			dest_folder = os.path.join(os.getcwd(), "download", title, subtitle)
 			if not os.path.exists(dest_folder):
 				os.makedirs(dest_folder)
