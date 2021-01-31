@@ -124,6 +124,7 @@ def dl(manga_id, lang_code, zip_up, tld="org", input_chap=""):
 		if "mangadex." not in server:
 			server = "https://mangadex.{}{}".format(tld, server)
 		hashcode = chapter["hash"]
+		volume = chapter["volume"]
 		for page in chapter["page_array"]:
 			images.append("{}{}/{}".format(server, hashcode, page))
 
@@ -134,7 +135,8 @@ def dl(manga_id, lang_code, zip_up, tld="org", input_chap=""):
 			ext = os.path.splitext(filename)[1]
 
 			title = re.sub('[/<>:"/\\|?*]', '-', title)
-			dest_folder = os.path.join(os.getcwd(), "download", title, "c{} [{}]".format(zpad(chapter_id[0]), groupname))
+			subtitle = "{volume}{chapter}{group}".format(volume='' if volume == '' else "v"+zpad(volume)+" ",chapter="c"+zpad(chapter_id[0])+" ",group="["+groupname+"]")
+			dest_folder = os.path.join(os.getcwd(), "download", title, subtitle)
 			if not os.path.exists(dest_folder):
 				os.makedirs(dest_folder)
 			dest_filename = pad_filename("{}{}".format(pagenum, ext))
@@ -156,8 +158,8 @@ def dl(manga_id, lang_code, zip_up, tld="org", input_chap=""):
 			time.sleep(1)
 
 		if zip_up == True:
-			zip_name = os.path.join(os.getcwd(), "download", title, title + " c{} [{}]".format(zpad(chapter_id[0]), groupname))+".zip"
-			chap_folder = os.path.join(os.getcwd(), "download", title, "c{} [{}]".format(zpad(chapter_id[0]), groupname))
+			zip_name = os.path.join(os.getcwd(), "download", title, title + " " + subtitle + ".zip")
+			chap_folder = os.path.join(os.getcwd(), "download", title, subtitle)
 			with zipfile.ZipFile(zip_name, 'w') as myzip:
 				for root, dirs, files in os.walk(chap_folder):
 					for file in files:
