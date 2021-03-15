@@ -149,7 +149,7 @@ def dl(manga_id, lang_code, zip_up, tld="org", input_chap=""):
 			chapnum = zpad(chapter_info[0])
 			volnum = ''
 			if volume:
-				volnum = 'v' + zpad(volume)
+				volnum = 'v' + zpad(volume) + ' '
 			if chapnum != "Oneshot":
 				chapnum = 'c' + chapnum
 				
