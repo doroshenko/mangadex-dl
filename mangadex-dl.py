@@ -154,7 +154,7 @@ def dl(manga_id, lang_code, zip_up, tld="org", input_chap=""):
 				chapnum = 'c' + chapnum
 				
 			title = re.sub('[/<>:"/\\|?*]', '-', title)				
-			subtitle = "{}{} [{}]".format(chapnum, volnum, groupname)
+			subtitle = "{}{} [{}]".format(volnum, chapnum, groupname)
 
 			dest_folder = os.path.join(os.getcwd(), "download", title, subtitle)
 			if not os.path.exists(dest_folder):
