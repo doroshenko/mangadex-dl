@@ -17,7 +17,7 @@
 
 import requests, time, os, sys, re, json, html, zipfile, argparse, shutil
 
-A_VERSION = "0.5.1"
+A_VERSION = "0.5.0"
 
 def pad_filename(str):
 	digits = re.compile('(\\d+)')
@@ -69,8 +69,7 @@ def get_title(uuid, lang_code):
 			print("Error - could not retrieve manga title.")
 			exit(1)
 	return title
-
-def dl(manga_id, lang_code, zip_up=False, input_chap=""):
+def dl(manga_id, lang_code, ds, zip_up=False, input_chap=""):
 	uuid = manga_id
 
 	if manga_id.isnumeric():
@@ -169,8 +168,11 @@ def dl(manga_id, lang_code, zip_up=False, input_chap=""):
 		images = []
 		accesstoken = ""
 		chaphash = chapter["data"]["attributes"]["hash"]
-		for page_filename in chapter["data"]["attributes"]["data"]:
-			images.append("{}/data/{}/{}".format(baseurl, chaphash, page_filename))
+		datamode = "dataSaver" if ds else "data"
+		datamode2 = "data-saver" if ds else "data"
+
+		for page_filename in chapter["data"]["attributes"][datamode]:
+			images.append("{}/{}/{}/{}".format(baseurl, datamode2, chaphash, page_filename))
 
 		# get group names & make combined name
 		group_uuids = []
@@ -245,11 +247,16 @@ if __name__ == "__main__":
 	if len(sys.argv) > 2:
 		parser = argparse.ArgumentParser()
 
-		parser.add_argument("--url", "-u", default="", help="Enter Mangadex URL. Required.")
-		parser.add_argument("--lang", "-l", default="en",
-							help="Set desired language (https://github.com/frozenpandaman/mangadex-dl/wiki/language-codes). Defaults to en if left out.")
-		parser.add_argument("--cbz", "-c", action="store_true", help="Include if you want to package chapter into .cbz")
-		parser.add_argument("--chapter", "-ch", default="last", help="Enter desired chapters, 'last' to download the latest chapter, or 'all' for all chapters.")
+		parser.add_argument("-u", dest="url",default="", 
+						help="Enter Mangadex URL. Required.")
+		parser.add_argument("-l", dest="lang", required=False, action="store",
+						help="download in specified language code (default: en)", default="en")
+		parser.add_argument("-d", dest="datasaver", required=False, action="store_true",
+						help="downloads images in lower quality")
+		parser.add_argument("-a", dest="cbz", required=False, action="store_true",
+						help="packages chapters into .cbz format")
+		parser.add_argument("-c", dest="chapter", default="last", 
+						help="Enter desired chapters, 'last' to download the latest chapter, or 'all' for all chapters.")
 
 		args = parser.parse_args()
 
@@ -260,8 +267,9 @@ if __name__ == "__main__":
 			print("You need to enter chapter(s)")
 			exit()
 		url = args.url
-		lang_code = args.lang
+		lang_code = "en" if args.lang is None else str(args.lang)
 		cbz_answer = args.cbz
+		ds         = args.datasaver
 		input_chap = args.chapter
 
 	else:
@@ -281,7 +289,6 @@ if __name__ == "__main__":
 				cbz_answer = ""
 
 		lang_code = sys.argv[1] if len(sys.argv) > 1 else "en"
-
 		input_chap = ""
 
 	try:
@@ -290,4 +297,4 @@ if __name__ == "__main__":
 		print("Error with URL.")
 		exit(1)
 
-	dl(manga_id, lang_code, cbz_answer, input_chap)
+	dl(manga_id, lang_code, ds, cbz_answer, input_chap)

@@ -9,21 +9,22 @@ A Python script to download manga from [MangaDex.org](https://mangadex.org/).
 ```
 $ git clone https://github.com/frozenpandaman/mangadex-dl
 $ cd mangadex-dl/
-$ python mangadex-dl.py [language_code]
+$ python mangadex-dl.py [-l language_code] [-d] [-a]
 ```
 
 For a list of language codes (optional argument; defaults to English), see [the wiki page](https://github.com/frozenpandaman/mangadex-dl/wiki/language-codes).
 
-If you prefer commandline arguments, just run:
-```
-$ python mangadex-dl.py --help
-```
+The `-d` flag, if present, downloads page images in lower quality (higher JPG compression/"data saver").
+
+The `-a` flag, if present, packages downloaded chapters into .cbz [comic book archive](https://en.wikipedia.org/wiki/Comic_book_archive) files.
+
+You can also execute the script via `./mangadex-dl.py` on macOS and Linux. On Windows, use a backslash.
 
 ### Example usage
 ```
 $ ./mangadex-dl.py
-mangadex-dl v0.5.1
-Enter manga URL: https://mangadex.org/title/311/yotsuba-to
+mangadex-dl v0.5.0
+Enter manga URL: https://mangadex.org/title/58be6aa6-06cb-4ca5-bd20-f1392ce451fb
 
 Title: Yotsuba to!
 Available chapters:
