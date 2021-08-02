@@ -290,6 +290,7 @@ if __name__ == "__main__":
 
 		lang_code = sys.argv[1] if len(sys.argv) > 1 else "en"
 		input_chap = ""
+		ds = False
 
 	try:
 		manga_id = url.split('/')[-1]
