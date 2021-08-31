@@ -17,7 +17,7 @@
 
 import requests, time, os, sys, re, json, html, zipfile, argparse, shutil
 
-A_VERSION = "0.5.0"
+A_VERSION = "0.5.1"
 
 def pad_filename(str):
 	digits = re.compile('(\\d+)')
@@ -33,6 +33,11 @@ def float_conversion(tupl):
 	except ValueError: # empty string for oneshot
 		x = 0
 	return x
+
+def find_id_in_url(url_parts):
+	for part in url_parts:
+		if "-" in part:
+			return part
 
 def zpad(num):
 	if "." in num:
@@ -293,7 +298,8 @@ if __name__ == "__main__":
 		ds = False
 
 	try:
-		manga_id = url.split('/')[-1]
+		url_parts = url.split('/')
+		manga_id = find_id_in_url(url_parts)
 	except:
 		print("Error with URL.")
 		exit(1)
