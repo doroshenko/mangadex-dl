@@ -17,7 +17,7 @@
 
 import requests, time, os, sys, re, json, html, zipfile, argparse, shutil
 
-A_VERSION = "0.5.1"
+A_VERSION = "0.5.2"
 
 def pad_filename(str):
 	digits = re.compile('(\\d+)')
@@ -74,7 +74,16 @@ def get_title(uuid, lang_code):
 			print("Error - could not retrieve manga title.")
 			exit(1)
 	return title
-def dl(manga_id, lang_code, ds, zip_up=False, input_chap=""):
+
+def uniquify(title, chapnum, groupname):
+	counter = 1
+	dest_folder = os.path.join(os.getcwd(), "download", title, "{} [{}]".format(chapnum, groupname))
+	while os.path.exists(dest_folder):
+		dest_folder = os.path.join(os.getcwd(), "download", title, "{}-{} [{}]".format(chapnum, counter, groupname))
+		counter += 1
+	return dest_folder
+
+def dl(manga_id, lang_code, zip_up, ds, input_chap):
 	uuid = manga_id
 
 	if manga_id.isnumeric():
@@ -194,22 +203,20 @@ def dl(manga_id, lang_code, ds, zip_up=False, input_chap=""):
 			groups += name
 		groupname = re.sub('[/<>:"/\\|?*]', '-', groups)
 
+		title = re.sub('[/<>:"/\\|?*]', '-', html.unescape(title))
+		chapnum = zpad(chapter_info[0])
+		if chapnum != "Oneshot":
+			chapnum = 'c' + chapnum
+
+		dest_folder = uniquify(title, chapnum, groupname)
+		if not os.path.exists(dest_folder):
+			os.makedirs(dest_folder)
+
 		# download images
 		for pagenum, url in enumerate(images, 1):
 			filename = os.path.basename(url)
 			ext = os.path.splitext(filename)[1]
 
-			title = re.sub('[/<>:"/\\|?*]', '-', html.unescape(title))
-			chapnum = zpad(chapter_info[0])
-			if chapnum != "Oneshot":
-				chapnum = 'c' + chapnum
-				
-			title = re.sub('[/<>:"/\\|?*]', '-', title)				
-			subtitle = "{} [{}]".format(chapnum, groupname)
-
-			dest_folder = os.path.join(os.getcwd(), "download", title, subtitle)
-			if not os.path.exists(dest_folder):
-				os.makedirs(dest_folder)
 			dest_filename = pad_filename("{}{}".format(pagenum, ext))
 			outfile = os.path.join(dest_folder, dest_filename)
 
@@ -304,4 +311,4 @@ if __name__ == "__main__":
 		print("Error with URL.")
 		exit(1)
 
-	dl(manga_id, lang_code, ds, cbz_answer, input_chap)
+	dl(manga_id, lang_code, cbz_answer, ds, input_chap)
