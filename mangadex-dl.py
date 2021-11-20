@@ -17,7 +17,7 @@
 
 import requests, time, os, sys, re, json, html, zipfile, argparse, shutil
 
-A_VERSION = "0.5.2"
+A_VERSION = "0.6"
 
 def pad_filename(str):
 	digits = re.compile('(\\d+)')
@@ -80,19 +80,22 @@ def get_title(uuid, lang_code):
 			try:
 				title = resp["data"]["attributes"]["title"]["en"]
 			except:
-				print("Error - could not retrieve manga title.")
-				exit(1)
+				try:
+					title = resp["data"]["attributes"]["title"]["ja"]
+				except:
+					print("Error - could not retrieve manga title.")
+					exit(1)
 	return title
 
-def uniquify(title, chapnum, groupname):
+def uniquify(title, chapnum, groupname, basedir):
 	counter = 1
-	dest_folder = os.path.join(os.getcwd(), "download", title, "{} [{}]".format(chapnum, groupname))
+	dest_folder = os.path.join(os.getcwd(), basedir, title, "{} [{}]".format(chapnum, groupname))
 	while os.path.exists(dest_folder):
-		dest_folder = os.path.join(os.getcwd(), "download", title, "{}-{} [{}]".format(chapnum, counter, groupname))
+		dest_folder = os.path.join(os.getcwd(), basedir, title, "{}-{} [{}]".format(chapnum, counter, groupname))
 		counter += 1
 	return dest_folder
 
-def dl(manga_id, lang_code, zip_up, ds, input_chap):
+def dl(manga_id, lang_code, zip_up, ds, outdir, input_chap):
 	uuid = manga_id
 
 	if manga_id.isnumeric():
@@ -218,7 +221,7 @@ def dl(manga_id, lang_code, zip_up, ds, input_chap):
 		if chapnum != "Oneshot":
 			chapnum = 'c' + chapnum
 
-		dest_folder = uniquify(title, chapnum, groupname)
+		dest_folder = uniquify(title, chapnum, groupname, outdir)
 		if not os.path.exists(dest_folder):
 			os.makedirs(dest_folder)
 
@@ -249,8 +252,8 @@ def dl(manga_id, lang_code, zip_up, ds, input_chap):
 			# not reporting https://api.mangadex.network/report telemetry for now, sorry
 
 		if zip_up:
-			zip_name = os.path.join(os.getcwd(), "download", title, "{} {} [{}]".format(title, chapnum, groupname)) + ".zip"
-			chap_folder = os.path.join(os.getcwd(), "download", title, "{} [{}]".format(chapnum, groupname))
+			zip_name = os.path.join(os.getcwd(), outdir, title, "{} {} [{}]".format(title, chapnum, groupname)) + ".zip"
+			chap_folder = os.path.join(os.getcwd(), outdir, title, "{} [{}]".format(chapnum, groupname))
 			with zipfile.ZipFile(zip_name, 'w') as myzip:
 				for root, dirs, files in os.walk(chap_folder):
 					for file in files:
@@ -279,6 +282,8 @@ if __name__ == "__main__":
 						help="packages chapters into .cbz format")
 		parser.add_argument("-c", dest="chapter", default="last", 
 						help="Enter desired chapters, 'last' to download the latest chapter, or 'all' for all chapters.")
+		parser.add_argument("-o", dest="outdir", required=False, action="store", default="download",
+						help="specify name of output directory")
 
 		args = parser.parse_args()
 
@@ -292,6 +297,7 @@ if __name__ == "__main__":
 		lang_code = "en" if args.lang is None else str(args.lang)
 		cbz_answer = args.cbz
 		ds         = args.datasaver
+		outdir     = args.outdir
 		input_chap = args.chapter
 
 	else:
@@ -312,6 +318,7 @@ if __name__ == "__main__":
 
 		lang_code = sys.argv[1] if len(sys.argv) > 1 else "en"
 		input_chap = ""
+		outdir = "download"
 		ds = False
 
 	try:
@@ -321,4 +328,4 @@ if __name__ == "__main__":
 		print("Error with URL.")
 		exit(1)
 
-	dl(manga_id, lang_code, cbz_answer, ds, input_chap)
+	dl(manga_id, lang_code, cbz_answer, ds, outdir, input_chap)
