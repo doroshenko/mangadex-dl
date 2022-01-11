@@ -147,9 +147,9 @@ def dl(manga_id, lang_code, zip_up, ds, outdir, input_chap):
 	if input_chap == "":
 		dl_list = input("\nEnter chapter(s) to download: ").strip()
 	elif input_chap == "all":
-		dl_list = ','.join(map(lambda x: x[0], chap_list))
+		dl_list = ','.join(map(lambda x: x["attributes"]["chapter"], chap_list))
 	elif input_chap == "last":
-		dl_list = chap_list[-1][0]
+		dl_list = chap_list[-1]["attributes"]["chapter"]
 	else:
 		dl_list = input_chap
 
