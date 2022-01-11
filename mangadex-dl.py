@@ -17,7 +17,7 @@
 
 import requests, time, os, sys, re, json, html, zipfile, argparse, shutil
 
-A_VERSION = "0.6"
+A_VERSION = "0.7"
 
 def pad_filename(str):
 	digits = re.compile('(\\d+)')
@@ -50,7 +50,8 @@ def get_uuid(manga_id):
 	headers = {'Content-Type': 'application/json'}
 	payload = '{"type": "manga", "ids": [' + str(manga_id) + ']}'
 	try:
-		r = requests.post("https://api.mangadex.org/legacy/mapping", headers=headers, data=payload)
+		r = requests.post("https://api.mangadex.org/legacy/mapping",
+				headers=headers, data=payload)
 	except:
 		print("Error. Maybe the MangaDex API is down?")
 		exit(1)
@@ -106,12 +107,18 @@ def dl(manga_id, lang_code, zip_up, ds, outdir, input_chap):
 
 	# check available chapters & get images
 	chap_list = []
-	content_ratings = "contentRating[]=safe&contentRating[]=suggestive&contentRating[]=erotica&contentRating[]=pornographic"
-	r = requests.get("https://api.mangadex.org/manga/{}/feed?limit=0&translatedLanguage[]={}&{}".format(uuid, lang_code, content_ratings))
+	content_ratings = "contentRating[]=safe"\
+			"&contentRating[]=suggestive"\
+			"&contentRating[]=erotica"\
+			"&contentRating[]=pornographic"
+	r = requests.get("https://api.mangadex.org/manga/{}/feed"\
+			"?limit=0&translatedLanguage[]={}&{}"
+			.format(uuid, lang_code, content_ratings))
 	try:
 		total = r.json()["total"]
 	except KeyError:
-		print("Error retrieving the chapters list. Did you specify a valid language code?")
+		print("Error retrieving the chapters list. "\
+				"Did you specify a valid language code?")
 		exit(1)
 
 	if total == 0:
@@ -120,18 +127,20 @@ def dl(manga_id, lang_code, zip_up, ds, outdir, input_chap):
 
 	offset = 0
 	while offset < total: # if more than 500 chapters!
-		r = requests.get("https://api.mangadex.org/manga/{}/feed?order[chapter]=asc&order[volume]=asc&limit=500&translatedLanguage[]={}&offset={}&{}".format(uuid, lang_code, offset, content_ratings))
+		r = requests.get("https://api.mangadex.org/manga/{}/feed"\
+				"?order[chapter]=asc&order[volume]=asc&limit=500"\
+				"&translatedLanguage[]={}&offset={}&{}"
+				.format(uuid, lang_code, offset, content_ratings))
 		chaps = r.json()
-		for chapter in chaps["data"]:
-			chap_num = chapter["attributes"]["chapter"]
-			chap_uuid = chapter["id"]
-			chap_list.append(("Oneshot", chap_uuid) if chap_num == None else (chap_num, chap_uuid))
+		chap_list += chaps["data"]
 		offset += 500
-	chap_list.sort(key=float_conversion) # sort numerically by chapter #
 
 	# chap_list is not empty at this point
 	print("Available chapters:")
-	print(" " + ', '.join(map(lambda x: x[0], chap_list)))
+	print(" " + ', '.join(map(
+		lambda x: "Oneshot" if x["attributes"]["chapter"] is None
+		else x["attributes"]["chapter"],
+		chap_list)))
 
 	# i/o for chapters to download
 	requested_chapters = []
@@ -145,7 +154,7 @@ def dl(manga_id, lang_code, zip_up, ds, outdir, input_chap):
 		dl_list = input_chap
 
 	dl_list = [s.strip() for s in dl_list.split(',')]
-	chap_list_only_nums = [i[0] for i in chap_list]
+	chap_list_only_nums = [i["attributes"]["chapter"] for i in chap_list]
 	for s in dl_list:
 		if "-" in s: # range
 			split = s.split('-')
@@ -154,17 +163,21 @@ def dl(manga_id, lang_code, zip_up, ds, outdir, input_chap):
 			try:
 				lower_bound_i = chap_list_only_nums.index(lower_bound)
 			except ValueError:
-				print("Chapter {} does not exist. Skipping range {}.".format(lower_bound, s))
+				print("Chapter {} does not exist. Skipping range {}."
+						.format(lower_bound, s))
 				continue # go to next iteration of loop
 			try:
 				upper_bound_i = chap_list_only_nums.index(upper_bound)
 			except ValueError:
-				print("Chapter {} does not exist. Skipping range {}.".format(upper_bound, s))
+				print("Chapter {} does not exist. Skipping range {}."
+						.format(upper_bound, s))
 				continue
 			s = chap_list[lower_bound_i:upper_bound_i+1]
 		elif s.lower() == "oneshot":
-			if "Oneshot" in chap_list_only_nums:
-				oneshot_idxs = [i for i, x in enumerate(chap_list_only_nums) if x == "Oneshot"]
+			if None in chap_list_only_nums:
+				oneshot_idxs = [i
+						for i, x in enumerate(chap_list_only_nums)
+						if x is None]
 				s = []
 				for idx in oneshot_idxs:
 					s.append(chap_list[idx])
@@ -183,27 +196,33 @@ def dl(manga_id, lang_code, zip_up, ds, outdir, input_chap):
 
 	# get chapter json(s)
 	print()
-	for chapter_info in requested_chapters:
-		print("Downloading chapter {}...".format(chapter_info[0]))
-		r = requests.get("https://api.mangadex.org/chapter/{}".format(chapter_info[1]))
-		chapter = json.loads(r.text)
+	progress_indicator = ["|", "/", "–", "\\"]
+	for index, chapter in enumerate(requested_chapters):
+		print("Downloading chapter {} [{}/{}]".format(
+			chapter["attributes"]["chapter"]
+			if chapter["attributes"]["chapter"] is not None
+			else "Oneshot", index+1, len(requested_chapters)))
 
-		r = requests.get("https://api.mangadex.org/at-home/server/{}".format(chapter_info[1]))
-		baseurl = r.json()["baseUrl"]
+		r = requests.get("https://api.mangadex.org/at-home/server/{}"
+				.format(chapter["id"]))
+		chapter_data = r.json()
+		baseurl = chapter_data["baseUrl"]
 
 		# make url list
 		images = []
 		accesstoken = ""
-		chaphash = chapter["data"]["attributes"]["hash"]
+		chaphash = chapter_data["chapter"]["hash"]
 		datamode = "dataSaver" if ds else "data"
 		datamode2 = "data-saver" if ds else "data"
+		errored = False
 
-		for page_filename in chapter["data"]["attributes"][datamode]:
-			images.append("{}/{}/{}/{}".format(baseurl, datamode2, chaphash, page_filename))
+		for page_filename in chapter_data["chapter"][datamode]:
+			images.append("{}/{}/{}/{}".format(
+				baseurl, datamode2, chaphash, page_filename))
 
 		# get group names & make combined name
 		group_uuids = []
-		for entry in chapter["data"]["relationships"]:
+		for entry in chapter["relationships"]:
 			if entry["type"] == "scanlation_group":
 				group_uuids.append(entry["id"])
 
@@ -217,9 +236,10 @@ def dl(manga_id, lang_code, zip_up, ds, outdir, input_chap):
 		groupname = re.sub('[/<>:"/\\|?*]', '-', groups)
 
 		title = re.sub('[/<>:"/\\|?*]', '-', html.unescape(title))
-		chapnum = zpad(chapter_info[0])
-		if chapnum != "Oneshot":
-			chapnum = 'c' + chapnum
+		if (chapter["attributes"]["chapter"]) is None:
+			chapnum = "Oneshot"
+		else:
+			chapnum = 'c' + zpad(chapter["attributes"]["chapter"])
 
 		dest_folder = uniquify(title, chapnum, groupname, outdir)
 		if not os.path.exists(dest_folder):
@@ -234,57 +254,69 @@ def dl(manga_id, lang_code, zip_up, ds, outdir, input_chap):
 			outfile = os.path.join(dest_folder, dest_filename)
 
 			r = requests.get(url)
+			# go back to the beginning and erase the line before printing more
+			print("\r\033[K{} Downloading pages [{}/{}]".format(
+				progress_indicator[(pagenum-1)%4], pagenum, len(images)),
+				end='', flush=True)
 			if r.status_code == 200:
 				with open(outfile, 'wb') as f:
 					f.write(r.content)
-					print(" Downloaded page {}.".format(pagenum))
 			else:
 				# silently try again
 				time.sleep(2)
 				r = requests.get(url)
 				if r.status_code == 200:
+					errored = False
 					with open(outfile, 'wb') as f:
 						f.write(r.content)
-						print(" Downloaded page {}.".format(pagenum))
 				else:
-					print(" Skipping download of page {} - error {}.".format(pagenum, r.status_code))
-			time.sleep(0.5) # safely within limit of 5 requests per second
+					errored = True
+					print("\n Skipping download of page {} - error {}.".format(
+						pagenum, r.status_code))
+			time.sleep(0.2) # within limit of 5 requests per second
 			# not reporting https://api.mangadex.network/report telemetry for now, sorry
 
 		if zip_up:
-			zip_name = os.path.join(os.getcwd(), outdir, title, "{} {} [{}]".format(title, chapnum, groupname)) + ".zip"
-			chap_folder = os.path.join(os.getcwd(), outdir, title, "{} [{}]".format(chapnum, groupname))
+			zip_name = os.path.join(os.getcwd(), outdir, title,
+					"{} {} [{}].zip".format(title, chapnum, groupname))
+			chap_folder = os.path.join(os.getcwd(), outdir, title,
+					"{} [{}]".format(chapnum, groupname))
 			with zipfile.ZipFile(zip_name, 'w') as myzip:
 				for root, dirs, files in os.walk(chap_folder):
 					for file in files:
 						path = os.path.join(root, file)
 						myzip.write(path, os.path.basename(path))
+			shutil.rmtree(chap_folder) # remove original folder of loose images
+		if not errored:
+			if len(requested_chapters) != index+1:
+				# go back to chapter line and clear it and everything under it
+				print("\033[F\033[J", end='', flush=True) 
+			else:
+				print("\r\033[K", end='', flush=True)
+	print("Done.")
 
-			print("Chapter successfully packaged into .zip")
-			
-			shutil.rmtree(chap_folder)
-
-	print("Done!")
 
 if __name__ == "__main__":
 	print("mangadex-dl v{}".format(A_VERSION))
 
 	if len(sys.argv) > 2:
 		parser = argparse.ArgumentParser()
-
 		parser.add_argument("-u", dest="url",default="", 
-						help="Enter Mangadex URL. Required.")
-		parser.add_argument("-l", dest="lang", required=False, action="store",
-						help="download in specified language code (default: en)", default="en")
-		parser.add_argument("-d", dest="datasaver", required=False, action="store_true",
-						help="downloads images in lower quality")
-		parser.add_argument("-a", dest="cbz", required=False, action="store_true",
-						help="packages chapters into .cbz format")
+				help="Enter Mangadex URL. Required.")
 		parser.add_argument("-c", dest="chapter", default="last", 
-						help="Enter desired chapters, 'last' to download the latest chapter, or 'all' for all chapters.")
-		parser.add_argument("-o", dest="outdir", required=False, action="store", default="download",
-						help="specify name of output directory")
-
+				help="Enter desired chapters, 'last' to download the latest chapter, or 'all' for all chapters.")
+		parser.add_argument("-l", dest="lang", required=False,
+				action="store", default="en",
+				help="download in specified language code (default: en)")
+		parser.add_argument("-d", dest="datasaver", required=False,
+				action="store_true",
+				help="download images in lower quality")
+		parser.add_argument("-a", dest="cbz", required=False,
+				action="store_true",
+				help="package chapters into .cbz format")
+		parser.add_argument("-o", dest="outdir", required=False,
+				action="store", default="download",
+				help="specify name of output directory")
 		args = parser.parse_args()
 
 		if args.url.strip() == "":
