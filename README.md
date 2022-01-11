@@ -11,16 +11,18 @@ A Python script to download manga from [MangaDex.org](https://mangadex.org/).
 $ git clone https://github.com/frozenpandaman/mangadex-dl
 $ pip install requests
 $ cd mangadex-dl/
-$ python mangadex-dl.py [-l language_code] [-d] [-a] [-o dl_dir]
+$ python mangadex-dl.py [-u url] [-c chapters] [-l language_code] [-d] [-a] [-o dl_dir]
 ```
 
 You can also execute the script via `./mangadex-dl.py` on macOS and Linux. On Windows, use a backslash.
 
 ### Optional flags
 
+* `-u`: Download the manga from a provided url
+* `-c`: Download a specified chapter or a chapter list
 * `-l`: Download releases in a language other than English. For a list of language codes, see the [wiki page](https://github.com/frozenpandaman/mangadex-dl/wiki/language-codes).
 * `-d`: Download page images in lower quality (higher JPG compression/"data saver").
-* `-a`: Package downloaded chapters into .cbz ([comic book archive](https://en.wikipedia.org/wiki/Comic_book_archive)) files.
+* `-a`: Package downloaded chapters into .zip files.
 * `-o`: Use a custom output directory name to save downloaded chapters. Defaults to "download".
 
 ### Example usage
@@ -44,6 +46,18 @@ Downloading chapter 1...
  Downloaded page 1.
  Downloaded page 2.
 ... (and so on)
+```
+
+```
+$ ./mangadex-dl.py -u https://mangadex.org/title/58be6aa6-06cb-4ca5-bd20-f1392ce451fb/yotsuba-to -c all
+```
+
+```
+$ ./mangadex-dl.py -u https://mangadex.org/title/58be6aa6-06cb-4ca5-bd20-f1392ce451fb/yotsuba-to -c last
+```
+
+```
+$ ./mangadex-dl.py -u https://mangadex.org/title/58be6aa6-06cb-4ca5-bd20-f1392ce451fb/yotsuba-to -c 1,4-7
 ```
 
 ### Current limitations
