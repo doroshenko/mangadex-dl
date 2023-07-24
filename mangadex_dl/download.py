@@ -128,7 +128,8 @@ def _download_image(full_url, image_count, directory_chapter):
         logging.error(f"File download failed ({image_file_path}): {err}")
 
 def _create_chapter_directory(out_directory, chapter_volume, chapter_number):
-    directory_chapter = out_directory / f"Volume {chapter_volume}" / f"Chapter {chapter_number}"
+    chapter_number_dir = chapter_number.replace(".", "x")
+    directory_chapter = out_directory / f"Volume {chapter_volume}" / f"Chapter {chapter_number_dir}"
 
     if directory_chapter.is_dir():
         # name folders like "Chapter 1 (2)"
