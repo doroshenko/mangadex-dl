@@ -133,7 +133,10 @@ def _create_chapter_directory(out_directory, manga_title, chapter_volume, chapte
         chapter_volume = chapter_volume.zfill(2)
         volume_dir = f"{manga_title} v{chapter_volume}"
     else:
-        volume_dir = f"{manga_title} v99"
+        if chapter_number == "Oneshot":
+            volume_dir = f"{manga_title} Oneshot"
+        else:
+            volume_dir = f"{manga_title} v99"
 
     if chapter_number != "Oneshot":
         chapter_parts = chapter_number.split(".")
