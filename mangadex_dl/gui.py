@@ -390,10 +390,14 @@ class _MangadexDlGui:
 
         self.status.set("Downloading started...")
 
+        manga_title = self.manga_info.title_en
+        manga_title = manga_title.replace('/', '-')
+        manga_title = manga_title.replace(':', '-')
+
         manga_directory = utils.create_manga_directory(Path(self.args.outdir.get()),
-                                                       self.manga_info.title_en,
+                                                       manga_title,
                                                        self.manga_info.uuid)
-        dl.download_chapters(self.manga_info.title_en,
+        dl.download_chapters(manga_title,
                              self.chapters_list_selected,
                              manga_directory,
                              self.args.datasaver.get(),

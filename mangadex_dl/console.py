@@ -64,15 +64,19 @@ def _dl_console(manga_url, args):
 
     dl_list = parse.parse_range(dl_input)
 
+    manga_title = manga_info.title_en
+    manga_title = manga_title.replace('/', '-')
+    manga_title = manga_title.replace(':', '-')
+
     # requested chapters list in dl_range
     requested_chapters = parse.get_requested_chapters(chapters_list, dl_list)
 
     # download images
     manga_directory = utils.create_manga_directory(args.outdir,
-                                                   manga_info.title_en,
+                                                   manga_title,
                                                    manga_info.uuid)
 
-    dl.download_chapters(manga_info.title_en, requested_chapters, manga_directory, args.datasaver)
+    dl.download_chapters(manga_title, requested_chapters, manga_directory, args.datasaver)
     print("\nChapters download completed successfully")
 
     # archive
