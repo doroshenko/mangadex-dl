@@ -32,7 +32,7 @@ def archive_manga(manga_dir: Path, archive_mode: str, is_keep: bool,
             print(f"\r  Archiving [{dir_archived:3}/{dir_max:3}]...", end="")
 
 def _archive_directory(directory: Path, is_keep: bool = True) -> None:
-    zip_name = directory.with_suffix(".zip") # you can change that to cbz
+    zip_name = Path(f"{directory}.zip") # you can change that to cbz
 
     with zipfile.ZipFile(zip_name, mode="w",
                          compression=zipfile.ZIP_STORED,
@@ -57,5 +57,5 @@ def _find_directories(manga_dir: Path, archive_mode: str) -> list[Path]:
         dir_list += manga_dir.glob("*/*/")
 
     # skip directories that have already been archived before
-    dir_list = list(filter(lambda f: not f.with_suffix(".zip").is_file(), dir_list))
+    dir_list = list(filter(lambda f: not Path(f"{f}.zip").is_file(), dir_list))
     return dir_list
