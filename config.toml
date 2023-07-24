@@ -16,7 +16,7 @@ download  = false
 archive   = "volume"
 keep      = false
 datasaver = false
-resolve   = "one"
+resolve   = "manual"
 gui       = true
 
 proxy = false
