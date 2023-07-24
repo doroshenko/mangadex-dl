@@ -17,7 +17,7 @@ archive   = "volume"
 keep      = false
 datasaver = false
 resolve   = "manual"
-gui       = true
+gui       = false
 
 proxy = false
 socks = false
