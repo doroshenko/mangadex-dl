@@ -393,7 +393,8 @@ class _MangadexDlGui:
         manga_directory = utils.create_manga_directory(Path(self.args.outdir.get()),
                                                        self.manga_info.title_en,
                                                        self.manga_info.uuid)
-        dl.download_chapters(self.chapters_list_selected,
+        dl.download_chapters(self.manga_info.title_en,
+                             self.chapters_list_selected,
                              manga_directory,
                              self.args.datasaver.get(),
                              self.lib_options)

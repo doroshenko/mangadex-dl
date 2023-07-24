@@ -72,7 +72,7 @@ def _dl_console(manga_url, args):
                                                    manga_info.title_en,
                                                    manga_info.uuid)
 
-    dl.download_chapters(requested_chapters, manga_directory, args.datasaver)
+    dl.download_chapters(manga_info.title_en, requested_chapters, manga_directory, args.datasaver)
     print("\nChapters download completed successfully")
 
     # archive

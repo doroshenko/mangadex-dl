@@ -46,7 +46,8 @@ def url_request(url, params={}, json=False):
 def get_json(url, params={}):
     return url_request(url, params=params, json=True)
 
-def download_chapters(requested_chapters,
+def download_chapters(manga_title,
+                      requested_chapters,
                       out_directory,
                       is_datasaver,
                       gui={"set": False}):
@@ -88,7 +89,7 @@ def download_chapters(requested_chapters,
             print(f"  Chapter {chapter_number} is not available from Mangadex.")
             continue
 
-        directory_chapter = _create_chapter_directory(out_directory, chapter_volume, chapter_number)
+        directory_chapter = _create_chapter_directory(out_directory, manga_title, chapter_volume, chapter_number)
 
         thread_pool = concurrent.futures.ThreadPoolExecutor(max_workers=5)
         if gui["set"]:
@@ -127,14 +128,22 @@ def _download_image(full_url, image_count, directory_chapter):
     except Exception as err:
         logging.error(f"File download failed ({image_file_path}): {err}")
 
-def _create_chapter_directory(out_directory, chapter_volume, chapter_number):
-    chapter_volume = chapter_volume.zfill(2)
+def _create_chapter_directory(out_directory, manga_title, chapter_volume, chapter_number):
+    if chapter_volume != "Unknown":
+        chapter_volume = chapter_volume.zfill(2)
+        volume_dir = f"{manga_title} v{chapter_volume}"
+    else:
+        volume_dir = f"{manga_title} v99"
 
-    chapter_parts = chapter_number.split(".")
-    chapter_parts[0] = chapter_parts[0].zfill(3)
-    chapter_number = "x".join(chapter_parts)
+    if chapter_number != "Oneshot":
+        chapter_parts = chapter_number.split(".")
+        chapter_parts[0] = chapter_parts[0].zfill(3)
+        chapter_number = "x".join(chapter_parts)
+        chapter_dir = f"{manga_title} c{chapter_number}"
+    else:
+        chapter_dir = f"{manga_title} {chapter_number}"
 
-    directory_chapter = out_directory / f"Volume {chapter_volume}" / f"Chapter {chapter_number}"
+    directory_chapter = out_directory / volume_dir / chapter_dir
 
     if directory_chapter.is_dir():
         # name folders like "Chapter 1 (2)"
