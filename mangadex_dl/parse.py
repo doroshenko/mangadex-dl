@@ -13,6 +13,9 @@ def parse_range(range_input):
 
     if range_input == "all":
         return "all"
+    
+    if range_input == "last":
+        return "last"
 
     # split the input string into separate ranges
     # ["v1", "v2(1)-v6(8)", ...]
@@ -27,6 +30,9 @@ def parse_range(range_input):
 def get_requested_chapters(chapters_list, dl_list):
     if dl_list == "all":
         return chapters_list
+    
+    if dl_list == "last":
+        return chapters_list[-1]
 
     requested_chapters = []
     for dl_range in dl_list:
